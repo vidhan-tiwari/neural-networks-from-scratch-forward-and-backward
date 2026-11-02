@@ -40,8 +40,18 @@ def numerical_gradient(f, x, eps=1e-5):
         grads[idx] = (f_plus - f_minus) / (2.0 * eps)
     return grads
 
-# Step 2 - gradient_check (not yet solved)
-# TODO: implement
+# Step 2 - gradient_check
+def gradient_check(analytic_grad, numeric_grad, tol=1e-5):
+    '''
+    mathematics to be implemented 
+    rel_error = |a-n|\max(|a|,|n|,tol)
+    '''
+    a = analytic_grad
+    n = numeric_grad
+    # np.maximum = calculates maximum value of two numpy arrays and returns a new one with maximum element values 
+    # np.max() is a reduction operation that converts nparray to single value 
+    rel_error = np.abs(a-n)/np.maximum(np.maximum(np.abs(a), np.abs(n)), tol)
+    return float(np.max(rel_error))
 
 # Step 3 - make_dense (not yet solved)
 # TODO: implement
