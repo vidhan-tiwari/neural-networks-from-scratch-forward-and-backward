@@ -53,8 +53,56 @@ def gradient_check(analytic_grad, numeric_grad, tol=1e-5):
     rel_error = np.abs(a-n)/np.maximum(np.maximum(np.abs(a), np.abs(n)), tol)
     return float(np.max(rel_error))
 
-# Step 3 - make_dense (not yet solved)
-# TODO: implement
+# Step 3 - make_dense
+def make_dense(in_dim, out_dim, weight_init_fn):
+    """Create a fully connected layer.
+
+    Inputs:
+      in_dim: int, input feature size
+      out_dim: int, output feature size
+      weight_init_fn: callable(in_dim, out_dim) -> (W, b)
+
+    Returns layer dict with keys:
+      params: {'W': (in_dim, out_dim), 'b': (out_dim,)}
+      forward(x) -> (y, cache) with y shape (batch, out_dim)
+      backward(dout, cache) -> (dx, grads) with grads {'W', 'b'}
+        Analytic dx/dW/db must match numerical_gradient via gradient_check.
+    """
+    # TODO: your approach here
+    W, b = weight_init_fn(in_dim,out_dim)
+    
+    # incase the return type of parameters is not numpy array
+    params = {
+      'W' : np.asarray(W, dtype = float),
+      'b' : np.asarray(b , dtype = float)
+    }
+
+    def forward(x):
+      x = np.asarray(x, dtype = float)
+      y = x @ params['W'] + params['b']
+      cache = x
+      return (y,cache)
+
+    def backward(dout,cache):
+      dout = np.asarray(dout, dtype = float)
+      x = cache
+
+      # analytical gradients derived by gradient chain rule 
+
+      dx = dout @ params['W'].T # this dx is used to back propagate gradient i.e works as 'dout' parameter for the previous layer.
+      dW = x.T @ dout
+      db = np.sum(dout,axis = 0 )
+      grads = {
+        'W' : dW,
+        'b' : db
+      }
+      return dx , grads
+
+    return {
+      'params' : params,
+       'forward' : forward,
+       'backward' : backward
+    }
 
 # Step 4 - make_activation (not yet solved)
 # TODO: implement
