@@ -124,6 +124,10 @@ def make_activation(kind='relu'):
     numerical_gradient / gradient_check.
     """
     # TODO: your approach here
+
+    if kind != 'relu':
+        raise NotImplementedError(f"Unsupported activation kind or not implemented yet: {kind}")
+
     def forward(x):
       # making cache as a copy of original array 
       cache = np.array(x, dtype = float , copy = True)
