@@ -188,8 +188,51 @@ def initialize_weights(in_dim, out_dim, scheme='he'):
     b = np.zeros(out_dim , dtype = float)
     return W,b
 
-# Step 6 - make_loss (not yet solved)
-# TODO: implement
+# Step 6 - make_loss
+def make_loss(kind='cross_entropy'):
+    """Return a classification loss_fn(logits, labels) -> (loss, d_logits).
+
+    Inputs to loss_fn:
+      logits: (batch, C) float array of raw class scores
+      labels: (batch,) int array of class indices in [0, C)
+    Outputs:
+      loss: Python float, mean scalar loss over the batch (finite)
+      d_logits: (batch, C) gradient of loss w.r.t. logits (finite)
+    Must pass gradient_check, be minimized by confident correct predictions,
+    and stay finite under saturated logits.
+    """
+    kind = kind.lower()
+
+    if kind != 'cross_entropy':
+      raise NotImplementedError(f"loss type {kind} is not supported")
+
+    else:
+      def loss_fn(logits , labels):
+        logits = np.asarray(logits, dtype = np.float64)
+        labels = np.asarray(labels, dtype = np.int64)
+        
+        batch_size, num_classes = logits.shape
+
+        # implement numerically stable LogSumExp trick
+        # log(sum(exp(x_i))) = max_x + log(sum(exp(x_i - max_x)))
+
+        max_logits = np.max(logits, axis = -1, keepdims = True)
+        shifted_logits = logits - max_logits
+        sum_exp = np.sum(np.exp(shifted_logits), axis = -1, keepdims = True)
+        log_sum_exp = np.squeeze(max_logits, axis = -1) + np.log(np.squeeze(sum_exp, axis = -1))
+
+        correct_class_logits = logits[np.arange(batch_size), labels]
+
+        sample_losses = log_sum_exp - correct_class_logits
+        loss = float(np.mean(sample_losses))
+
+        probs = np.exp(shifted_logits) / sum_exp
+
+        d_logits = probs.copy()
+        d_logits[np.arange(batch_size), labels] -= 1.0
+        d_logits /= batch_size
+        return loss, d_logits
+      return loss_fn
 
 # Step 7 - make_sequential (not yet solved)
 # TODO: implement
