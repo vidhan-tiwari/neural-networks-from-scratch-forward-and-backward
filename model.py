@@ -134,7 +134,7 @@ def make_activation(kind='relu'):
       if kind == 'relu':
         y = np.where(x > 0 , x , 0)
       elif kind == 'tanh':
-        y = np.tanh(x, dtype = float, copy = True)
+        y = np.tanh(x, dtype = float)
       
       return (y, cache) 
 
