@@ -125,17 +125,24 @@ def make_activation(kind='relu'):
     """
     # TODO: your approach here
 
-    if kind != 'relu':
+    if kind not in ('relu', 'tanh'):
         raise NotImplementedError(f"Unsupported activation kind or not implemented yet: {kind}")
 
     def forward(x):
       # making cache as a copy of original array 
-      cache = np.array(x, dtype = float , copy = True)
-      y = np.where(x > 0 , x , 0)
+      cache = np.array(x, dtype = float, copy = True)
+      if kind == 'relu':
+        y = np.where(x > 0 , x , 0)
+      elif kind == 'tanh':
+        y = np.tanh(x, dtype = float, copy = True)
+      
       return (y, cache) 
 
     def backward(dout , cache):
-      dx = np.where(cache > 0 , 1.0 , 0.0)
+      if kind == 'relu':
+        dx = np.where(cache > 0 , 1.0 , 0.0) 
+      elif kind == 'tanh':
+        dx = 1.0 - np.tanh(cache) ** 2
       # now apply the chain rule
       dx = dx * dout
       return (dx , {})
@@ -234,8 +241,37 @@ def make_loss(kind='cross_entropy'):
         return loss, d_logits
       return loss_fn
 
-# Step 7 - make_sequential (not yet solved)
-# TODO: implement
+# Step 7 - make_sequential
+def make_sequential(layers):
+    layers = list(layers)
+
+    def forward(x):
+        caches = []
+        current = x
+        for layer in layers:
+            current, cache = layer['forward'](current)
+            caches.append(cache)
+        return current, caches
+
+    def backward(dout, caches):
+        grads_list = [None] * len(layers)
+        current_dout = dout
+
+        # Iterate in reverse order from layer n-1 down to 0 
+        for i in reversed(range(len(layers))):
+            current_dout, layer_grads = layers[i]['backward'](current_dout, caches[i])
+            grads_list[i] = layer_grads
+      
+        return current_dout, grads_list
+
+    # De-indented to sit at the make_sequential function scope
+    params = [layer.get('params', {}) for layer in layers]
+
+    return {
+        'forward': forward,
+        'backward': backward,
+        'params': params,
+    }
 
 # Step 8 - forward_backward (not yet solved)
 # TODO: implement
