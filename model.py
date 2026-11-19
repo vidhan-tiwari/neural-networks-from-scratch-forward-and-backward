@@ -371,14 +371,49 @@ def train_step(model, loss_fn, optimizer, x_batch, y_batch):
       Model parameters are updated in place; shapes unchanged and values finite.
     """
     loss , param_grads = forward_backward(model , loss_fn , x_batch, y_batch)
-    params = model['params']
-    step_dict = make_optimizer(params)
     # perform one step in-place update of parameters
-    step_dict['step'](param_grads)
+    optimizer['step'](param_grads)
     return loss
 
-# Step 11 - train (not yet solved)
-# TODO: implement
+# Step 11 - train
+def train(model, loss_fn, optimizer, x, y, epochs, batch_size, seed=0):
+    """Run a deterministic minibatch training loop.
+
+    Inputs:
+      model: sequential model dict with 'forward', 'backward', 'params'
+      loss_fn: callable (logits, y) -> (loss, d_logits)
+      optimizer: dict with 'step'(grads) applying in-place parameter updates
+      x: np.ndarray of shape (N, D) training features
+      y: np.ndarray of shape (N,) integer class labels
+      epochs: int, number of full passes over the data
+      batch_size: int, minibatch size
+      seed: int, RNG seed for deterministic shuffling / batching
+
+    Returns:
+      history: list[float] of length `epochs`; history[t] is the mean
+      train_step loss over minibatches in epoch t.
+      Model parameters are updated in place; shapes unchanged.
+    """
+    # TODO: your approach here
+    rng = np.random.default_rng(seed)
+    n_samples = x.shape[0] 
+    loss_history = []
+
+    for _ in range(epochs):
+      perm = rng.permutation(n_samples)
+      epoch_loss = 0.0
+      num_batches = 0
+
+      for start in range(0, n_samples, batch_size):
+
+        batch_idx = perm[start : start + batch_size]
+        epoch_loss += train_step( model, loss_fn, optimizer, x[batch_idx], y[batch_idx] )
+        num_batches += 1
+
+      loss_history.append(
+          float(epoch_loss / num_batches) if num_batches else 0.0
+      )
+    return loss_history
 
 # Step 12 - design_network (not yet solved)
 # TODO: implement
