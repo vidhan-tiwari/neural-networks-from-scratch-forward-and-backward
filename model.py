@@ -296,8 +296,64 @@ def forward_backward(model, loss_fn, x, y):
     dx , param_grads = model['backward'](d_logits, caches)
     return loss , param_grads
 
-# Step 9 - make_optimizer (not yet solved)
-# TODO: implement
+# Step 9 - make_optimizer
+def make_optimizer(params, lr=1e-2, kind='sgd'):
+    """Build an optimizer that updates params in place.
+
+    Inputs:
+      params: arrays, possibly nested in lists/dicts (or dict of arrays) to optimize
+      lr: float learning rate
+      kind: str algorithm name (e.g. 'sgd')
+
+    Returns:
+      dict with key 'step'. step(grads) applies one in-place update
+      using grads structured like params. Parameter shapes must stay
+      unchanged. Repeated steps must reduce a simple convex objective
+      within a modest fixed budget and keep values finite.
+    """
+    # TODO: your approach here
+    if kind != 'sgd':
+      raise NotImplementedError(f'The optimizer {kind} has not been implemented')
+    
+    # this is validation helper function that enforces validation check
+
+    def type_validation(params , grads):
+      if type(params) != type(grads):
+        raise TypeError(f'Container types of params - {type(params)} and grads- {type(grads)} do not match ')
+      else:
+        return
+
+    # this is helper recursive function that implements step() recursively
+    def _update_inplace(params , grads):
+      # since params and grads  have symmetrical containers
+
+
+      # in case it a numpy array 
+      if isinstance(params , np.ndarray):
+        type_validation(params , grads)
+        params -= grads * lr
+
+      # in case they are lists
+      elif isinstance(params , list):
+        type_validation(params , grads)
+        for param_item , grad_item  in zip(params , grads):
+          _update_inplace(param_item , grad_item)
+      
+      # in case they are dictionary ( or nested dictionaries)
+      elif isinstance(params , dict):
+        type_validation(params , grads)
+        for key in params:
+          _update_inplace(params[key], grads[key])
+
+      # when we have assymetrical or unfamiliar container type:
+      else:
+        raise TypeError(f'Unsupported parameter container type: {type(p)}')
+    # Since we have different kinds of parameter containes we need to deel with each one:
+    def step(grads):
+      _update_inplace(params , grads) # underscore is convetion for in-place operations
+
+
+    return {'step':step} # a callable(function) was asked to return.
 
 # Step 10 - train_step (not yet solved)
 # TODO: implement
